@@ -33,16 +33,19 @@ export default function Terminal({ result }: TerminalProps) {
   }, [result])
 
   // Scan each word individually
+  // Ignore digits_only and phone for individual words — those only make sense for the full message
   const wordScans = useMemo<WordScan[]>(() => {
     if (!result) return []
     const tokens = result.input.split(/(\s+)/).filter(t => t.trim())
     return tokens.map(word => {
       const res = scanWord(word)
+      const ignoreReasons = ['digits_only', 'phone']
+      const effectiveAllowed = res.allowed || (!res.allowed && ignoreReasons.includes(res.reason as string))
       return {
         word,
-        allowed: res.allowed,
-        reason: res.allowed ? undefined : res.reason,
-        matched: res.allowed ? undefined : res.matched,
+        allowed: effectiveAllowed,
+        reason: effectiveAllowed ? undefined : res.reason,
+        matched: effectiveAllowed ? undefined : res.matched,
       }
     })
   }, [result])
