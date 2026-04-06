@@ -114,6 +114,7 @@ const FUZZY_ALLOWLIST = new Set([
   'batedor', 'batedores',
   'punho', 'punhal', 'punhado',
   'tocada', 'tocado',
+  'primeira', 'primeiro', 'primeiras', 'primeiros',
   'mamae', 'mamada',  // mamae gets fuzzy-matched to mamada incorrectly
 ]);
 

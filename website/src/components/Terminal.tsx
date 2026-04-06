@@ -32,14 +32,47 @@ export default function Terminal({ result }: TerminalProps) {
     setSelectedIndex(null)
   }, [result])
 
-  // Scan each word individually
-  // Ignore digits_only and phone for individual words — those only make sense for the full message
+  // Scan each word individually + n-grams (2-3 word phrases) for compound matches
   const wordScans = useMemo<WordScan[]>(() => {
     if (!result) return []
     const tokens = result.input.split(/(\s+)/).filter(t => t.trim())
-    return tokens.map(word => {
+    const ignoreReasons = ['digits_only', 'phone']
+
+    // First, find which token indices are part of a blocked n-gram
+    const ngramBlocked = new Map<number, WordScan>()
+
+    for (let n = 4; n >= 2; n--) {
+      for (let i = 0; i <= tokens.length - n; i++) {
+        const phrase = tokens.slice(i, i + n).join(' ')
+        const res = scanWord(phrase)
+        if (!res.allowed && !ignoreReasons.includes(res.reason as string)) {
+          for (let j = i; j < i + n; j++) {
+            if (!ngramBlocked.has(j)) {
+              ngramBlocked.set(j, {
+                word: phrase,
+                allowed: false,
+                reason: res.reason,
+                matched: res.matched,
+              })
+            }
+          }
+        }
+      }
+    }
+
+    return tokens.map((word, i) => {
+      // Check if this token is part of a blocked n-gram
+      if (ngramBlocked.has(i)) {
+        return {
+          word,
+          allowed: false,
+          reason: ngramBlocked.get(i)!.reason,
+          matched: ngramBlocked.get(i)!.matched,
+        }
+      }
+
+      // Single word scan
       const res = scanWord(word)
-      const ignoreReasons = ['digits_only', 'phone']
       const effectiveAllowed = res.allowed || (!res.allowed && ignoreReasons.includes(res.reason as string))
       return {
         word,
