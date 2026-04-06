@@ -1,4 +1,4 @@
-import { filterContent, normalize } from '../src/filter';
+import { filterContent, normalize, createFilter } from '../src/filter';
 
 // ─── Normalization ───────────────────────────────────────────────────────────
 
@@ -388,6 +388,122 @@ describe('fuzzy match — performance', () => {
     const elapsed = Date.now() - start;
     // 50 runs < 500ms = avg < 10ms each (accounts for CI/WSL overhead)
     expect(elapsed).toBeLessThan(500);
+  });
+});
+
+// ─── Offensive emoji detection ───────────────────────────────────────────────
+
+describe('offensive emoji detection', () => {
+  describe('always-blocked emojis', () => {
+    it('blocks middle finger 🖕', () => {
+      const result = filterContent('🖕');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+
+    it('blocks middle finger with skin tone 🖕🏽', () => {
+      const result = filterContent('🖕🏽');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+
+    it('blocks middle finger in text', () => {
+      const result = filterContent('toma isso 🖕 otário');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+  });
+
+  describe('offensive emoji sequences', () => {
+    it('blocks 🍆💦 (sexual)', () => {
+      const result = filterContent('🍆💦');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+
+    it('blocks 🍆🍑 (sexual)', () => {
+      const result = filterContent('🍆🍑');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+
+    it('blocks 🍑💦 (sexual)', () => {
+      const result = filterContent('🍑💦');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+
+    it('blocks 🐵🐒 (racial)', () => {
+      const result = filterContent('🐵🐒');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+
+    it('blocks 🍌🐒 (racial)', () => {
+      const result = filterContent('🍌🐒');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+
+    it('blocks sequences embedded in text', () => {
+      const result = filterContent('olha isso 🍆💦 haha');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+  });
+
+  describe('context-sensitive emojis', () => {
+    it('blocks 🐵 when directed at someone', () => {
+      const result = filterContent('você é um 🐵');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+
+    it('allows 🐵 in neutral context', () => {
+      expect(filterContent('vi um 🐵 no zoologico').allowed).toBe(true);
+    });
+
+    it('allows 🐒 in neutral context', () => {
+      expect(filterContent('o 🐒 é fofo').allowed).toBe(true);
+    });
+
+    it('blocks 🐒 when directed at someone', () => {
+      const result = filterContent('seu 🐒');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('offensive_emoji');
+    });
+  });
+
+  describe('false positives — safe emoji usage', () => {
+    it('allows single 🍆 (eggplant in food context)', () => {
+      expect(filterContent('fiz uma receita com 🍆').allowed).toBe(true);
+    });
+
+    it('allows single 🍑 (peach in food context)', () => {
+      expect(filterContent('comi um 🍑 hoje').allowed).toBe(true);
+    });
+
+    it('allows 💦 alone (water/sweat)', () => {
+      expect(filterContent('que calor 💦').allowed).toBe(true);
+    });
+
+    it('allows common friendly emojis', () => {
+      expect(filterContent('oi! 😊👋').allowed).toBe(true);
+      expect(filterContent('parabéns! 🎉🎂').allowed).toBe(true);
+      expect(filterContent('boa noite 🌙❤️').allowed).toBe(true);
+    });
+
+    it('allows animal emojis in neutral context', () => {
+      expect(filterContent('gosto de 🐶 e 🐱').allowed).toBe(true);
+    });
+  });
+
+  describe('blockEmojis option', () => {
+    it('disabling blockEmojis allows offensive emojis', () => {
+      const filter = createFilter({ blockEmojis: false });
+      expect(filter('🖕').allowed).toBe(true);
+      expect(filter('🍆💦').allowed).toBe(true);
+    });
   });
 });
 

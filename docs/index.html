@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToxiBR - Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 720px;
+      width: 100%;
+      padding: 2rem 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 span {
+      color: #f43f5e;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: #1a1a2e;
+      color: #818cf8;
+      border: 1px solid #2d2d5e;
+    }
+
+    .input-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      font-size: 1.1rem;
+      font-family: inherit;
+      background: #141414;
+      border: 2px solid #2a2a2a;
+      border-radius: 12px;
+      color: #fff;
+      resize: none;
+      height: 120px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #4f46e5;
+    }
+
+    textarea::placeholder {
+      color: #555;
+    }
+
+    .result-card {
+      padding: 1.25rem 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .result-card.waiting {
+      background: #141414;
+      border-color: #2a2a2a;
+    }
+
+    .result-card.allowed {
+      background: #052e16;
+      border-color: #16a34a;
+    }
+
+    .result-card.blocked {
+      background: #2a0a0a;
+      border-color: #f43f5e;
+    }
+
+    .result-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .result-text h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .result-text p {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    .result-text .matched {
+      color: #f43f5e;
+      font-weight: 600;
+    }
+
+    .result-text .reason-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      background: #3b1520;
+      color: #f43f5e;
+      margin-left: 0.5rem;
+    }
+
+    .normalized-section {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .normalized-section h4 {
+      font-size: 0.8rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .normalized-section code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.95rem;
+      color: #818cf8;
+      word-break: break-all;
+    }
+
+    .examples-section {
+      margin-top: 2rem;
+    }
+
+    .examples-section h3 {
+      font-size: 1rem;
+      color: #888;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .examples-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 500px) {
+      .examples-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .example-btn {
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #ccc;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .example-btn:hover {
+      border-color: #4f46e5;
+      background: #1a1a2e;
+      color: #fff;
+    }
+
+    .example-btn .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .example-btn .label.safe { color: #16a34a; }
+    .example-btn .label.toxic { color: #f43f5e; }
+    .example-btn .label.bypass { color: #f59e0b; }
+
+    .stats {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 2.5rem;
+      padding-top: 2rem;
+      border-top: 1px solid #1a1a1a;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1a1a1a;
+    }
+
+    footer a {
+      color: #818cf8;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .install-cmd {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      color: #16a34a;
+      text-align: center;
+      margin-top: 1rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .install-cmd:hover {
+      border-color: #16a34a;
+    }
+
+    .install-cmd::before {
+      content: '$ ';
+      color: #555;
+    }
+
+    .copied-toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #16a34a;
+      color: #fff;
+      padding: 0.5rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      transition: transform 0.3s ease;
+      z-index: 100;
+    }
+
+    .copied-toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .reason-map {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.25rem 1rem;
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.75rem;
+    }
+
+    .reason-map dt {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: #818cf8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Toxi<span>BR</span></h1>
+      <p class="subtitle">Moderacao de chat open source para portugues brasileiro</p>
+      <div class="badge-row">
+        <span class="badge">Zero dependencias</span>
+        <span class="badge">&lt; 1ms</span>
+        <span class="badge">Client-side</span>
+        <span class="badge">Context-aware</span>
+      </div>
+    </header>
+
+    <div class="input-section">
+      <div class="input-wrapper">
+        <textarea id="input" placeholder="Digite uma mensagem para testar o filtro..." autofocus></textarea>
+      </div>
+    </div>
+
+    <div class="result-card waiting" id="result-card">
+      <div class="result-icon" id="result-icon">&#128269;</div>
+      <div class="result-text">
+        <h3 id="result-title">Aguardando mensagem...</h3>
+        <p id="result-detail">Digite algo acima para ver o resultado do filtro em tempo real.</p>
+      </div>
+    </div>
+
+    <div class="normalized-section">
+      <h4>Texto normalizado</h4>
+      <code id="normalized-text">—</code>
+    </div>
+
+    <div class="examples-section">
+      <h3>Exemplos para testar</h3>
+      <div class="examples-grid">
+        <button class="example-btn" onclick="testExample('eu me sinto um lixo')">
+          <div class="label safe">Permitido</div>
+          eu me sinto um lixo
+        </button>
+        <button class="example-btn" onclick="testExample('voce e um lixo')">
+          <div class="label toxic">Bloqueado</div>
+          voce e um lixo
+        </button>
+        <button class="example-btn" onclick="testExample('3stupr0')">
+          <div class="label bypass">Anti-bypass</div>
+          3stupr0 (leetspeak)
+        </button>
+        <button class="example-btn" onclick="testExample('p.u.t.a')">
+          <div class="label bypass">Anti-bypass</div>
+          p.u.t.a (separado por pontos)
+        </button>
+        <button class="example-btn" onclick="testExample('meu computador travou')">
+          <div class="label safe">Permitido</div>
+          meu computador travou
+        </button>
+        <button class="example-btn" onclick="testExample('(21) 99470-9426')">
+          <div class="label toxic">Telefone</div>
+          (21) 99470-9426
+        </button>
+        <button class="example-btn" onclick="testExample('comida gostosa')">
+          <div class="label safe">Permitido</div>
+          comida gostosa
+        </button>
+        <button class="example-btn" onclick="testExample('sua gostosa')">
+          <div class="label toxic">Bloqueado</div>
+          sua gostosa
+        </button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="stat-words">0</div>
+        <div class="stat-label">Termos bloqueados</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-context">0</div>
+        <div class="stat-label">Context-sensitive</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">< 1ms</div>
+        <div class="stat-label">Por mensagem</div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="install-cmd" onclick="copyInstall()">npm install toxibr</div>
+      <p style="margin-top: 1rem; color: #666; font-size: 0.85rem;">
+        <a href="https://github.com/Diaum/toxibr">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/toxibr">npm</a> ·
+        <a href="https://github.com/Diaum/toxibr/blob/main/CONTRIBUTING.md">Contribuir</a>
+      </p>
+    </footer>
+  </div>
+
+  <div class="copied-toast" id="toast">Copiado!</div>
+
+  <script src="toxibr.min.js"></script>
+  <script>
+    const input = document.getElementById('input');
+    const card = document.getElementById('result-card');
+    const icon = document.getElementById('result-icon');
+    const title = document.getElementById('result-title');
+    const detail = document.getElementById('result-detail');
+    const normalizedEl = document.getElementById('normalized-text');
+
+    // Stats
+    document.getElementById('stat-words').textContent = ToxiBR.HARD_BLOCKED.length;
+    document.getElementById('stat-context').textContent = ToxiBR.CONTEXT_SENSITIVE.length;
+
+    const reasonLabels = {
+      hard_block: 'Termo proibido',
+      directed_insult: 'Insulto dirigido',
+      fuzzy_match: 'Fuzzy match',
+      link: 'Link detectado',
+      phone: 'Telefone detectado',
+      digits_only: 'Apenas numeros',
+    };
+
+    function updateResult() {
+      const text = input.value.trim();
+
+      if (!text) {
+        card.className = 'result-card waiting';
+        icon.innerHTML = '&#128269;';
+        title.textContent = 'Aguardando mensagem...';
+        detail.textContent = 'Digite algo acima para ver o resultado do filtro em tempo real.';
+        normalizedEl.textContent = '\u2014';
+        return;
+      }
+
+      const start = performance.now();
+      const result = ToxiBR.filterContent(text);
+      const elapsed = (performance.now() - start).toFixed(2);
+
+      normalizedEl.textContent = ToxiBR.normalize(text);
+
+      if (result.allowed) {
+        card.className = 'result-card allowed';
+        icon.innerHTML = '&#9989;';
+        title.innerHTML = 'Mensagem permitida';
+        detail.innerHTML = `Nenhum conteudo toxico detectado. <span style="color:#666">(${elapsed}ms)</span>`;
+      } else {
+        card.className = 'result-card blocked';
+        icon.innerHTML = '&#128683;';
+        title.innerHTML = `Mensagem bloqueada <span class="reason-badge">${reasonLabels[result.reason] || result.reason}</span>`;
+        detail.innerHTML = `Detectado: <span class="matched">${result.matched}</span> <span style="color:#666">(${elapsed}ms)</span>`;
+      }
+    }
+
+    input.addEventListener('input', updateResult);
+
+    function testExample(text) {
+      input.value = text;
+      updateResult();
+      input.focus();
+    }
+
+    function copyInstall() {
+      navigator.clipboard.writeText('npm install toxibr');
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1500);
+    }
+  </script>
+</body>
+</html>

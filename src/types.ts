@@ -1,4 +1,4 @@
-export type FilterReason = 'hard_block' | 'directed_insult' | 'fuzzy_match' | 'link' | 'phone' | 'digits_only';
+export type FilterReason = 'hard_block' | 'directed_insult' | 'fuzzy_match' | 'link' | 'phone' | 'digits_only' | 'offensive_emoji';
 
 export type FilterResult =
   | { allowed: true }
@@ -15,4 +15,6 @@ export interface ToxiBROptions {
   blockPhones?: boolean;
   /** Block messages that are only digits. Default: true */
   blockDigitsOnly?: boolean;
+  /** Block offensive emojis and emoji sequences. Default: true */
+  blockEmojis?: boolean;
 }

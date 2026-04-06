@@ -226,6 +226,45 @@ export const CONTEXT_SENSITIVE: string[] = [
   'delicia',              // "que delicia de bolo"
 ];
 
+/** Emojis SEMPRE bloqueados (inequivocamente ofensivos). */
+export const OFFENSIVE_EMOJIS: string[] = [
+  '🖕',     // dedo do meio
+  '🖕🏻', '🖕🏼', '🖕🏽', '🖕🏾', '🖕🏿', // variantes de tom de pele
+];
+
+/** Sequências de emojis ofensivas (combinações inequívocas). */
+export const OFFENSIVE_EMOJI_SEQUENCES: string[] = [
+  // ── Conotação sexual explícita ──
+  '🍆💦',    // pênis + ejaculação
+  '🍆🍑',    // pênis + bunda
+  '🍑💦',    // bunda + ejaculação
+  '🍆👅',    // pênis + oral
+  '👅💦',    // oral + ejaculação
+  '🍑🍆',    // bunda + pênis
+  '💦🍆',    // ejaculação + pênis
+  '🍆😮',    // pênis + boca aberta
+  '🍆🤤',    // pênis + babando
+  '🍑👋',    // bunda + tapa
+  '🍑🤤',    // bunda + babando
+  '🍆🍆',    // pênis repetido
+  '🍑🍑',    // bunda repetida
+  '💦💦',    // ejaculação repetida
+  // ── Racismo ──
+  '🐵🐒',    // macaco duplo (insulto racial)
+  '🐒🐵',
+  '🦍🐒',
+  '🦍🐵',
+  '🍌🐒',    // banana + macaco
+  '🍌🐵',
+];
+
+/** Emojis bloqueados APENAS quando dirigidos a outra pessoa (contexto racial). */
+export const CONTEXT_SENSITIVE_EMOJIS: string[] = [
+  '🐵',     // macaco
+  '🐒',     // macaco
+  '🦍',     // gorila
+];
+
 /** Padrões que indicam fala dirigida a outra pessoa (2ª pessoa). */
 export const DIRECTED_PATTERNS: RegExp[] = [
   /\bvoc[eê]s?\b/i,

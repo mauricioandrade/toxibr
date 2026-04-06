@@ -7,6 +7,9 @@ import {
   CONTEXT_SENSITIVE,
   DIRECTED_PATTERNS,
   SELF_EXPRESSION_PATTERNS,
+  OFFENSIVE_EMOJIS,
+  OFFENSIVE_EMOJI_SEQUENCES,
+  CONTEXT_SENSITIVE_EMOJIS,
 } from './wordlists';
 import type { FilterResult, ToxiBROptions } from './types';
 
@@ -129,6 +132,7 @@ export function createFilter(options: ToxiBROptions = {}) {
     blockLinks = true,
     blockPhones = true,
     blockDigitsOnly = true,
+    blockEmojis = true,
   } = options;
 
   const allBlocked = [...HARD_BLOCKED, ...extraBlockedWords];
@@ -171,6 +175,34 @@ export function createFilter(options: ToxiBROptions = {}) {
     // Layer 0c: Block messages that are only digits
     if (blockDigitsOnly && /^\d+$/.test(text.trim())) {
       return { allowed: false, reason: 'digits_only', matched: 'numero isolado' };
+    }
+
+    // Layer 0d: Offensive emojis (checked on raw text — normalization strips emojis)
+    if (blockEmojis) {
+      // Strip zero-width joiners and variation selectors for comparison
+      const emojiText = text.replace(/[\uFE00-\uFE0F\u200D]/g, '');
+
+      // Always-blocked emojis
+      for (const emoji of OFFENSIVE_EMOJIS) {
+        if (emojiText.includes(emoji)) {
+          return { allowed: false, reason: 'offensive_emoji', matched: emoji };
+        }
+      }
+
+      // Always-blocked sequences
+      for (const seq of OFFENSIVE_EMOJI_SEQUENCES) {
+        if (emojiText.includes(seq)) {
+          return { allowed: false, reason: 'offensive_emoji', matched: seq };
+        }
+      }
+
+      // Context-sensitive emojis (only block when directed at someone)
+      for (const emoji of CONTEXT_SENSITIVE_EMOJIS) {
+        if (!emojiText.includes(emoji)) continue;
+        if (DIRECTED_PATTERNS.some(p => p.test(normalized))) {
+          return { allowed: false, reason: 'offensive_emoji', matched: emoji };
+        }
+      }
     }
 
     // Layer 1: Hard-blocked words
