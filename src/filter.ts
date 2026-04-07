@@ -357,6 +357,9 @@ export function createFilter(options: ToxiBROptions = {}) {
     if (/\b-18\b/.test(text)) {
       return makeResult('hard_block', '-18');
     }
+    if (/\bcam4\b/i.test(text)) {
+      return makeResult('hard_block', 'cam4');
+    }
 
     // Layer 0a: Block links/URLs
     if (blockLinks && LINK_REGEX.test(text)) {

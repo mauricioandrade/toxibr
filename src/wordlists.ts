@@ -215,6 +215,24 @@ export const HARD_BLOCKED: string[] = [
   'botei ela pra trabalhar', 'botar ela pra trabalhar',
   'mamou muito', 'mamou gostoso',
   'leite na boca', 'joguei o leite', 'jogou o leite',
+  // Narrativa sexual
+  'comi uma gordinha', 'comi uma',
+  'pernas bambas',
+  'engolia tudo', 'engoliu tudo',
+  'bolas na boca', 'colocar as bolas',
+  'meteu tudo dentro', 'metendo nela', 'metendo nele',
+  'continuei metendo', 'comendo com forca',
+  'champanhe dentro', 'estourei a champanhe',
+  'igual uma cachorra', 'igual cachorra',
+  'toda arreganhada', 'arreganhada', 'arreganhado',
+  'carne viva',
+  'feita para usar', 'feita pra usar',
+  'meter com mais forca', 'mete com forca',
+  'coloquei fundo', 'meti fundo', 'meteu fundo',
+  'sem do ate o saco',
+  'squirt',
+  'dar o cu',
+  'gostam de dar',
   'pau gostoso', 'pau grosso', 'pau grande',
   'ta duro', 'ta dura', 'ficou duro', 'ficou dura',
   'deixar o oco', 'deixar um oco', 'ficar um oco',
@@ -359,7 +377,7 @@ export const HARD_BLOCKED: string[] = [
   'motherless', 'fapdu', 'rule34', 'nhentai', 'hentaihaven',
   'hanime', 'brazzers', 'realitykings', 'bangbros', 'mofos',
   'fakehub', 'teamskeet', 'nubiles', 'onlyfans', 'fansly',
-  'manyvids', 'chaturbate', 'stripchat', 'bongacams', 'cam4',
+  'manyvids', 'chaturbate', 'stripchat', 'bongacams',
   'livejasmin', 'flirt4free', 'myfreecams', 'camsoda',
 ];
 
@@ -481,7 +499,9 @@ export const SEXUAL_SEED_WORDS: string[] = [
   'cuspir', 'engolir',
   // Partes do corpo / contexto adicional
   'boca', 'dentro', 'pelo', 'gordinha',
-  'bafo',
+  'bafo', 'bambas', 'fundo', 'forca',
+  'cachorra', 'arreganhada', 'esfolado',
+  'squirt', 'melam', 'melou',
 ];
 
 /** Padrões que indicam fala dirigida a outra pessoa (2ª pessoa). */
