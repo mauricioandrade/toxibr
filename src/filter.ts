@@ -271,6 +271,8 @@ const FUZZY_ALLOWLIST = new Set([
   'torno', // → corno
   'ponta',
   'pontas', // → phnta
+  'bloqueie', // → boquete
+  'roda', // prefix matches rodada
 ]);
 
 // ─── Escape regex special chars ──────────────────────────────────────────────

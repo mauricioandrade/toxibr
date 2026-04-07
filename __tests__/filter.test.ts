@@ -432,6 +432,8 @@ describe('false positives — new v2 additions must not break', () => {
     'o dp do predio avisou',
     'pinto de ovo caipira',
     'eu pinto a parede amanha',
+    'Bloqueie palavras e ofensas usando contexto',
+    'nada de SDK pesado, roda em qualquer lugar',
   ];
 
   safe.forEach((phrase) => {
