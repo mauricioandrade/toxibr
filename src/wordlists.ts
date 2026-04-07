@@ -163,6 +163,8 @@ export const HARD_BLOCKED: string[] = [
   'menininha', 'garotinha',
   'tirar um cabaco', 'cabaco', 'cabacinho',
   'cabacinho de novinha',
+  'pedem por ajuda', 'pede por ajuda', 'gritam e pedem',
+  'quando elas gritam', 'quando ela grita',
   'novinha', 'novinhas',
 
   // ── Abreviacoes sexuais ──
@@ -201,6 +203,10 @@ export const HARD_BLOCKED: string[] = [
   'mexendo nas bolas', 'mexer nas bolas',
   'no pau dele', 'no pau dela',
   'nas bolas dele',
+  'pau gostoso', 'pau grosso', 'pau grande',
+  'ta duro', 'ta dura', 'ficou duro', 'ficou dura',
+  'deixar o oco', 'deixar um oco', 'ficar um oco',
+  'da mais prazer', 'mais prazer', 'muito prazer',
   'gozar', 'gozada', 'gozadas', 'gozei', 'gozou', 'gozaram',
   'jorrar', 'jorrada', 'jorrou', 'jorro', 'jorradas',
   'foder', 'fudendo', 'fudido',
