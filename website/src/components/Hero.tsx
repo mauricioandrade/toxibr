@@ -66,7 +66,7 @@ export default function Hero({ onCopy }: HeroProps) {
       <h1 className="hero-title">
         <span className="hero-gradient">Lib de moderação</span>
         <br />
-        de chat PT-BR
+        para chats tóxicos 🇧🇷
       </h1>
 
       <p className="hero-highlight">
