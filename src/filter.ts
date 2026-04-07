@@ -126,6 +126,24 @@ const HOMOGLYPHS: Record<string, string> = {
   '\u029C': 'h', // ʜ (small capital H)
   '\u029F': 'l', // ʟ (small capital L)
   '\u02A0': 'q', // ʠ (q with hook)
+
+  // Currency & typographic symbols abused as letter substitutes
+  '\u20AC': 'e', // € (euro sign → e)
+  '\u00A3': 'l', // £ (pound sign → l)
+  '\u00A2': 'c', // ¢ (cent sign → c)
+  '\u00A5': 'y', // ¥ (yen sign → y)
+
+  // Superscript digits → ASCII digits (leetspeak will then convert them)
+  '\u00B2': '2', // ² → 2
+  '\u00B3': '3', // ³ → 3
+  '\u00B9': '1', // ¹ → 1
+  '\u2070': '0', // ⁰ → 0
+  '\u2074': '4', // ⁴ → 4
+  '\u2075': '5', // ⁵ → 5
+  '\u2076': '6', // ⁶ → 6
+  '\u2077': '7', // ⁷ → 7
+  '\u2078': '8', // ⁸ → 8
+  '\u2079': '9', // ⁹ → 9
 };
 
 // ─── Leetspeak map ───────────────────────────────────────────────────────────
@@ -443,6 +461,21 @@ export function createFilter(options: ToxiBROptions = {}): ToxiBRFilter {
       _emojiSepRe.test(text)
     ) {
       return makeResult('hard_block', 'censorship bypass');
+    }
+
+    // Layer 0e: Words with 3+ digits mixed with letters — obfuscation bypass
+    // (e.g. v14d0, p0rn0gr4f14, c4r4lh0). Pure digit sequences and known
+    // technical patterns (like "h2o2", short codes) are excluded.
+    {
+      const words = text.split(/\s+/);
+      for (const w of words) {
+        // Must contain at least one letter and at least 3 digits
+        if (!/[a-zA-Z]/.test(w)) continue;
+        const digitCount = (w.match(/\d/g) || []).length;
+        if (digitCount >= 3) {
+          return makeResult('hard_block', 'censorship bypass');
+        }
+      }
     }
 
     // Layer 0z: Pre-normalization exact matches (terms that break after leetspeak/normalization)

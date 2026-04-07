@@ -1405,3 +1405,126 @@ describe('[Issue #42] - 10 Termos Reportados', () => {
     });
   });
 });
+
+// ─── Issue #46 — Bypass com símbolos especiais (€, ³, £, etc.) ──────────────
+
+describe('[Issue #46] - Bypass com símbolos especiais (€, ³, £, ¢)', () => {
+  describe('normalização de símbolos especiais', () => {
+    it('normalizes € → e (m€rda → merda)', () => {
+      expect(normalize('m€rda')).toBe('merda');
+    });
+
+    it('normalizes ³ → 3 → e (m³rda → merda)', () => {
+      expect(normalize('m³rda')).toBe('merda');
+    });
+
+    it('normalizes £ → l (£ixo → lixo)', () => {
+      expect(normalize('£ixo')).toBe('lixo');
+    });
+
+    it('normalizes ¢ → c (¢uzao → cuzao)', () => {
+      expect(normalize('¢uzao')).toBe('cuzao');
+    });
+
+    it('normalizes ² → 2 (superscript)', () => {
+      expect(normalize('a²b')).toBe('a2b');
+    });
+
+    it('normalizes ¹ → 1 → i (v¹ado → viado)', () => {
+      expect(normalize('v¹ado')).toBe('viado');
+    });
+  });
+
+  describe('bloqueio de bypass com € e ³', () => {
+    it('blocks m€rda (€ → e → merda)', () => {
+      const result = filterContent('seu m€rda');
+      expect(result.allowed).toBe(false);
+    });
+
+    it('blocks m³rda (³ → 3 → e → merda)', () => {
+      const result = filterContent('seu m³rda');
+      expect(result.allowed).toBe(false);
+    });
+
+    it('blocks ¢uzao (¢ → c → cuzao)', () => {
+      const result = filterContent('¢uzao');
+      expect(result.allowed).toBe(false);
+    });
+
+    it('blocks v¹ado (¹ → 1 → i → viado)', () => {
+      const result = filterContent('v¹ado');
+      expect(result.allowed).toBe(false);
+    });
+
+    it('blocks put⁴ (⁴ → 4 → a → puta)', () => {
+      const result = filterContent('put⁴');
+      expect(result.allowed).toBe(false);
+    });
+  });
+});
+
+// ─── Issue #47 — Bloqueio automático de palavras com 3+ dígitos ─────────────
+
+describe('[Issue #47] - Bloqueio de palavras com 3+ dígitos (ofuscação)', () => {
+  describe('bypass bloqueado (3+ dígitos em palavra com letras)', () => {
+    it('blocks v14d0 (viado com 3 dígitos)', () => {
+      const result = filterContent('v14d0');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks p0rn0gr4f14 (pornografia com muitos dígitos)', () => {
+      const result = filterContent('p0rn0gr4f14');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks c4r4lh0 (caralho com 3 dígitos)', () => {
+      const result = filterContent('c4r4lh0');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks 3stup4d0r (estuprador com 3 dígitos)', () => {
+      const result = filterContent('3stup4d0r');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks bu53t4 (buceta com 3 dígitos)', () => {
+      const result = filterContent('bu53t4');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+  });
+
+  describe('falsos positivos — devem passar (CONTENT CLEAN)', () => {
+    it('allows ps5 (apenas 1 dígito)', () => {
+      expect(filterContent('comprei um ps5').allowed).toBe(true);
+    });
+
+    it('allows b2b (apenas 1 dígito)', () => {
+      expect(filterContent('estrategia b2b').allowed).toBe(true);
+    });
+
+    it('allows h2o (apenas 1 dígito)', () => {
+      expect(filterContent('beba h2o').allowed).toBe(true);
+    });
+
+    it('allows co2 (apenas 1 dígito)', () => {
+      expect(filterContent('emissoes de co2').allowed).toBe(true);
+    });
+
+    it('allows 2x1 (apenas 1 letra)', () => {
+      expect(filterContent('oferta 2x1').allowed).toBe(true);
+    });
+
+    it('allows mp3 (apenas 1 dígito)', () => {
+      expect(filterContent('arquivo mp3').allowed).toBe(true);
+    });
+
+    it('allows w10 (apenas 2 dígitos)', () => {
+      expect(filterContent('windows w10').allowed).toBe(true);
+    });
+  });
+});
