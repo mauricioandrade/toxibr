@@ -11,6 +11,7 @@ import {
   OFFENSIVE_EMOJIS,
   OFFENSIVE_EMOJI_SEQUENCES,
   CONTEXT_SENSITIVE_EMOJIS,
+  WHITELIST,
 } from './wordlists';
 import type { FilterResult, CensorResult, ToxiBROptions, FilterReason, Severity } from './types';
 
@@ -279,6 +280,10 @@ const FUZZY_ALLOWLIST = new Set([
   'roda', // prefix matches rodada
 ]);
 
+// Words explicitly whitelisted (never blocked, not even by fuzzy/prefix).
+// Built once at module load from the WHITELIST exported by wordlists.ts.
+const whitelistNormalized = new Set(WHITELIST.map(normalize));
+
 // ─── Escape regex special chars ──────────────────────────────────────────────
 
 function escapeRegex(str: string): string {
@@ -442,7 +447,7 @@ export function createFilter(options: ToxiBROptions = {}) {
       const messageWords = new Set(normalized.split(/\s+/));
       for (const msgWord of messageWords) {
         const threshold = getFuzzyThreshold(msgWord.length);
-        if (threshold === 0 || FUZZY_ALLOWLIST.has(msgWord)) continue;
+        if (threshold === 0 || FUZZY_ALLOWLIST.has(msgWord) || whitelistNormalized.has(msgWord)) continue;
         // Only check blocked words whose length is within threshold range
         for (let len = msgWord.length - threshold; len <= msgWord.length + threshold; len++) {
           const candidates = fuzzyByLength.get(len);
@@ -462,7 +467,7 @@ export function createFilter(options: ToxiBROptions = {}) {
       const messageWords = normalized.split(/\s+/);
       for (const msgWord of messageWords) {
         // Word must be at least 4 chars and cover at least 70% of a blocked word
-        if (msgWord.length < 4 || FUZZY_ALLOWLIST.has(msgWord)) continue;
+        if (msgWord.length < 4 || FUZZY_ALLOWLIST.has(msgWord) || whitelistNormalized.has(msgWord)) continue;
         for (const blocked of prefixWords) {
           if (blocked.length < msgWord.length) continue;
           if (blocked.startsWith(msgWord) && msgWord.length >= blocked.length * 0.55) {
@@ -663,3 +668,4 @@ export const filterBatch = createFilterBatch();
 // ─── Default filter (zero config) ────────────────────────────────────────────
 
 export const filterContent = createFilter();
+

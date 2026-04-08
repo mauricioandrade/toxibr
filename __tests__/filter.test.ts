@@ -271,6 +271,20 @@ describe('pinto/dp as context-sensitive (v2.1)', () => {
     expect(filterContent('voce quer dp').allowed).toBe(false);
   });
 });
+// ── Testes para Issue #57 (pipoca / pika ) ────────────────────────────────────
+//pipoca deve ser permitido, pika deve ser bloqueado
+describe('Issue #57 - Falsos positivos com pipoca e pika', () => {
+  
+  it('deve permitir "pipoca" (falso positivo no fuzzy match)', () => {
+    expect(filterContent("Eu amo comer pipoca assistindo filme").allowed).toBe(true);
+  });
+
+  it('deve bloquear "pika" (adicionado ao HARD_BLOCKED)', () => {
+    expect(filterContent("Aquele cara é um pika").allowed).toBe(false);
+    expect(filterContent("pika").allowed).toBe(false);
+  });
+
+});
 
 // ─── Dot-separated bypass ───────────────────────────────────────────────────
 
@@ -1253,3 +1267,56 @@ describe('[Issue #42] - 10 Termos Reportados', () => {
     });
   });
 });
+
+// ─── Issue #57 — Whitelist e falso positivo pipoca/piroca ────────────────────
+
+describe('Issue #57 — Whitelist: falsos positivos de fuzzy match', () => {
+  describe('falso positivo corrigido (pipoca ≠ piroca)', () => {
+    it('allows "pipoca" (fuzzy-match com piroca era falso positivo)', () => {
+      const result = filterContent('pipoca');
+      expect(result.allowed).toBe(true);
+    });
+
+    it('allows "quero pipoca no cinema" (contexto inocente)', () => {
+      expect(filterContent('quero pipoca no cinema').allowed).toBe(true);
+    });
+
+    it('allows "picar a pele" (picar — na WHITELIST)', () => {
+      expect(filterContent('picar a pele').allowed).toBe(true);
+    });
+
+    it('allows "picada de mosquito" (picada — na WHITELIST)', () => {
+      expect(filterContent('picada de mosquito').allowed).toBe(true);
+    });
+
+    it('allows "pimenta picante" (picante — na WHITELIST)', () => {
+      expect(filterContent('pimenta picante').allowed).toBe(true);
+    });
+  });
+
+  describe('falso negativo corrigido (pika deve ser bloqueado)', () => {
+    it('blocks "pika" (variante de pica — hard blocked)', () => {
+      const result = filterContent('pika');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks "manda a pika" (pika em contexto sexual)', () => {
+      const result = filterContent('manda a pika');
+      expect(result.allowed).toBe(false);
+    });
+  });
+
+  describe('piroca continua bloqueada (regressao)', () => {
+    it('blocks "piroca" (hard blocked — não regrediu)', () => {
+      const result = filterContent('piroca');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks "pirok4" (leet bypass de piroca)', () => {
+      expect(filterContent('pirok4').allowed).toBe(false);
+    });
+  });
+});
+
