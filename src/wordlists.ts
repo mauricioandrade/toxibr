@@ -108,7 +108,6 @@ export const HARD_BLOCKED: string[] = [
   'brasileirinhas',
 
   // ── Conteudo sexual explicito ──
-  // Issue #42 — termos não capturados
   'tarado', 'tarada',
   'cuzinho',
   'gozo', 'gozos',
@@ -260,6 +259,7 @@ export const HARD_BLOCKED: string[] = [
   'foder', 'fudendo', 'fudido',
   'transar', 'transando', 'transa',
   'piroca', 'pirocao', 'pirocas', 'pirocudo',
+  'pika',   // variante de pica (gíria sexual) — sem uso inocente em PT-BR
   'buceta', 'bucetao', 'bucetas', 'bucetasso', 'bucetinha', 'bucetinhas', 'bucetonas',
   'boceta',
   'xoxota', 'xoxotas', 'xoxotinha',
@@ -621,4 +621,12 @@ export const SELF_EXPRESSION_PATTERNS: RegExp[] = [
   /\bque\s+putaria\b/i, // "que putaria"
   /\bta\s+foda\b/i, // "ta foda"
   /\be\s+foda\b/i, // "e foda"
+];
+// ── Whitelist (Exceções para evitar falsos positivos) ────────────────────────
+// Palavras que NUNCA devem ser bloqueadas, mesmo que sejam parecidas com palavrões.
+export const WHITELIST: string[] = [
+  'pipoca',
+  'picar',
+  'picada',
+  'picante',
 ];

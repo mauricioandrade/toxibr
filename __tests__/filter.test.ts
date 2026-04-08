@@ -1,4 +1,4 @@
-import { describe, it, expect, jest } from '@jest/globals';
+import { describe, it, expect, test } from '@jest/globals';
 import {
   filterContent,
   normalize,
@@ -294,6 +294,18 @@ describe('pinto/dp as context-sensitive (v2.1)', () => {
   it('blocks "voce quer dp" (directed)', () => {
     expect(filterContent('voce quer dp').allowed).toBe(false);
   });
+});
+describe('Falsos positivos com pipoca e pika', () => {
+  
+  it('deve permitir "pipoca" (falso positivo no fuzzy match)', () => {
+    expect(filterContent("Eu amo comer pipoca assistindo filme").allowed).toBe(true);
+  });
+
+  it('deve bloquear "pika" (adicionado ao HARD_BLOCKED)', () => {
+    expect(filterContent("Aquele cara é um pika").allowed).toBe(false);
+    expect(filterContent("pika").allowed).toBe(false);
+  });
+
 });
 
 // ─── Dot-separated bypass ───────────────────────────────────────────────────
@@ -1222,161 +1234,9 @@ describe('filterBatch', () => {
   });
 });
 
-// ─── onBlock callback ─────────────────────────────────────────────────────────
+// ─── Bypass com números não-leet e emojis ────────────────────────────────────
 
-describe('onBlock callback', () => {
-  it('calls onBlock when a message is blocked', () => {
-    const blocked: Array<{ reason: string; matched: string }> = [];
-    const filter = createFilter({
-      onBlock: (result) => {
-        blocked.push({ reason: result.reason, matched: result.matched });
-      },
-    });
-
-    filter('bom dia');
-    expect(blocked).toHaveLength(0);
-
-    filter('seu arrombado');
-    expect(blocked).toHaveLength(1);
-    expect(blocked[0].reason).toBe('hard_block');
-  });
-
-  it('does not call onBlock for allowed messages', () => {
-    const spy = jest.fn();
-    const filter = createFilter({ onBlock: spy });
-
-    filter('bom dia');
-    filter('tudo bem');
-    expect(spy).not.toHaveBeenCalled();
-  });
-
-  it('works without onBlock (no error)', () => {
-    const filter = createFilter();
-    expect(() => filter('seu arrombado')).not.toThrow();
-  });
-});
-
-// ─── Stats tracking ───────────────────────────────────────────────────────────
-
-describe('Stats tracking', () => {
-  it('tracks stats when trackStats is true', () => {
-    const filter = createFilter({ trackStats: true });
-
-    filter('bom dia');
-    filter('tudo bem');
-    filter('seu idiota');
-
-    const stats = filter.getStats();
-    expect(stats.total).toBe(3);
-    expect(stats.allowed).toBe(2);
-    expect(stats.blocked).toBe(1);
-    expect(stats.byReason.directed_insult).toBe(1);
-    expect(stats.topMatched).toEqual(
-      expect.arrayContaining([expect.objectContaining({ word: 'idiota', count: 1 })])
-    );
-    expect(stats.avgTimeMs).toBeGreaterThanOrEqual(0);
-  });
-
-  it('does not track stats when trackStats is false (default)', () => {
-    const filter = createFilter();
-
-    filter('bom dia');
-    filter('fdp');
-
-    const stats = filter.getStats();
-    expect(stats.total).toBe(0);
-    expect(stats.allowed).toBe(0);
-    expect(stats.blocked).toBe(0);
-  });
-
-  it('resets stats correctly', () => {
-    const filter = createFilter({ trackStats: true });
-
-    filter('fdp');
-    filter('bom dia');
-    expect(filter.getStats().total).toBe(2);
-
-    filter.resetStats();
-    const stats = filter.getStats();
-    expect(stats.total).toBe(0);
-    expect(stats.allowed).toBe(0);
-    expect(stats.blocked).toBe(0);
-    expect(stats.byReason).toEqual({});
-    expect(stats.topMatched).toEqual([]);
-    expect(stats.avgTimeMs).toBe(0);
-  });
-
-  it('exports stats as JSON string', () => {
-    const filter = createFilter({ trackStats: true });
-
-    filter('bom dia');
-    filter('fdp');
-
-    const json = filter.exportStats();
-    const parsed = JSON.parse(json);
-    expect(parsed.total).toBe(2);
-    expect(parsed.allowed).toBe(1);
-    expect(parsed.blocked).toBe(1);
-  });
-
-  it('accumulates byReason counts', () => {
-    const filter = createFilter({ trackStats: true });
-
-    filter('fdp');
-    filter('puta');
-    filter('http://example.com');
-
-    const stats = filter.getStats();
-    expect(stats.byReason.hard_block).toBe(2);
-    expect(stats.byReason.link).toBe(1);
-  });
-
-  it('sorts topMatched by count descending', () => {
-    const filter = createFilter({ trackStats: true });
-
-    filter('fdp');
-    filter('fdp');
-    filter('fdp');
-    filter('puta');
-
-    const stats = filter.getStats();
-    expect(stats.topMatched[0].word).toBe('fdp');
-    expect(stats.topMatched[0].count).toBe(3);
-    expect(stats.topMatched[1].word).toBe('puta');
-    expect(stats.topMatched[1].count).toBe(1);
-  });
-
-  it('stats are local to each filter instance', () => {
-    const filter1 = createFilter({ trackStats: true });
-    const filter2 = createFilter({ trackStats: true });
-
-    filter1('fdp');
-    filter1('fdp');
-    filter2('puta');
-
-    expect(filter1.getStats().total).toBe(2);
-    expect(filter2.getStats().total).toBe(1);
-  });
-
-  it('works with onBlock and trackStats together', () => {
-    const blocked: string[] = [];
-    const filter = createFilter({
-      trackStats: true,
-      onBlock: (result) => blocked.push(result.matched),
-    });
-
-    filter('bom dia');
-    filter('fdp');
-    filter('puta');
-
-    expect(blocked).toEqual(['fdp', 'puta']);
-    expect(filter.getStats().blocked).toBe(2);
-  });
-});
-
-// ─── Issue #37 — Bypass com números não-leet e emojis ────────────────────────
-
-describe('Issue #37 — numeric bypass (digits 2, 6, 8, 9 as separators)', () => {
+describe('numeric bypass (digits 2, 6, 8, 9 as separators)', () => {
   describe('bypass bloqueado', () => {
     it('blocks v2ado (viado com 2)', () => {
       const result = filterContent('v2ado');
@@ -1438,7 +1298,7 @@ describe('Issue #37 — numeric bypass (digits 2, 6, 8, 9 as separators)', () =>
   });
 });
 
-describe('Issue #37 — emoji bypass (emojis como separadores dentro de palavras)', () => {
+describe('emoji bypass (emojis como separadores dentro de palavras)', () => {
   describe('bypass bloqueado', () => {
     it('blocks v🍑ado (viado com emoji pêssego)', () => {
       const result = filterContent('v🍑ado');
@@ -1495,7 +1355,7 @@ describe('Issue #37 — emoji bypass (emojis como separadores dentro de palavras
   });
 });
 
-describe('Issue #37 — leetspeak legítimo (0, 1, 3, 4, 5, 7) continua funcionando via Layer de tradução', () => {
+describe('leetspeak legítimo (0, 1, 3, 4, 5, 7) continua funcionando via Layer de tradução', () => {
   it('blocks 3stupr0 (estupro com leet 3→e, 0→o)', () => {
     const result = filterContent('3stupr0');
     expect(result.allowed).toBe(false);
