@@ -1746,3 +1746,186 @@ describe('[Issue #47] - Bloqueio de palavras com 3+ dígitos (ofuscação)', () 
     });
   });
 });
+
+// ─── Issue #27 — Stalking, perseguição e ameaças pessoais ────────────────────
+
+describe('[Issue #27] - Stalking, perseguição e ameaças pessoais', () => {
+  // ── Stalking: conhecimento de localização e rotina ────────────────────────
+  describe('stalking — conhecimento de localização e rotina', () => {
+    const cases = [
+      'sei onde voce mora',
+      'sei onde tu mora',
+      'sei onde voce estuda',
+      'sei onde tu estudas',
+      'sei onde voce trabalha',
+      'sei onde tu trabalha',
+      'sei onde voce fica',
+      'sei teu endereco',
+      'sei seu endereco',
+      'sei tua rua',
+      'sei sua rua',
+      'sei seus horarios',
+      'sei teus horarios',
+      'sei quando voce sai',
+      'sei quando tu sai',
+      'sei quando voce chega',
+      'sei quando tu chega',
+      'sei sua rotina',
+      'sei tua rotina',
+    ];
+
+    cases.forEach((phrase) => {
+      it(`blocks "${phrase}"`, () => {
+        const result = filterContent(phrase);
+        expect(result.allowed).toBe(false);
+        if (!result.allowed) expect(result.reason).toBe('hard_block');
+      });
+    });
+  });
+
+  // ── Stalking: vigilância e perseguição física ─────────────────────────────
+  describe('stalking — vigilância e perseguição', () => {
+    const cases = [
+      'vou te achar',
+      'vou te rastrear',
+      'te rastrear',
+      'vou na tua casa',
+      'vou na sua casa',
+      'vou aparecer na tua porta',
+      'vou aparecer na sua porta',
+      'vou te seguir',
+      'vou ficar te seguindo',
+      'to de olho em voce',
+      'to de olho em ti',
+      'estou te vigiando',
+      'to te vigiando',
+      'nao tem pra onde correr',
+      'nao tem como escapar',
+      'voce nao vai escapar',
+    ];
+
+    cases.forEach((phrase) => {
+      it(`blocks "${phrase}"`, () => {
+        const result = filterContent(phrase);
+        expect(result.allowed).toBe(false);
+        if (!result.allowed) expect(result.reason).toBe('hard_block');
+      });
+    });
+  });
+
+  // ── Ameaças pessoais ──────────────────────────────────────────────────────
+  describe('ameaças pessoais', () => {
+    const cases = [
+      'vou te pegar na saida',
+      'vou te esperar na saida',
+      'to te esperando',
+      'vai se arrepender',
+      'voce vai se arrepender',
+      'vai se arrepender disso',
+      'voce vai pagar',
+      'voce vai pagar por isso',
+      'voce vai pagar por tudo',
+      'voce vai ver o que vai acontecer',
+      'vou acabar com voce',
+      'cuidado quando sair de casa',
+      'sei quem voce e',
+      'seus dias estao contados',
+      'ta com os dias contados',
+      'nao vai escapar de mim',
+    ];
+
+    cases.forEach((phrase) => {
+      it(`blocks "${phrase}"`, () => {
+        const result = filterContent(phrase);
+        expect(result.allowed).toBe(false);
+        if (!result.allowed) expect(result.reason).toBe('hard_block');
+      });
+    });
+  });
+
+  // ── Doxxing: exposição de dados pessoais ──────────────────────────────────
+  describe('doxxing — exposição de dados pessoais', () => {
+    const cases = [
+      'vou vazar seus dados',
+      'vou vazar teus dados',
+      'vou vazar suas fotos',
+      'vou vazar tuas fotos',
+      'vou postar seu endereco',
+      'vou postar teu endereco',
+      'vou publicar seu endereco',
+      'vou publicar teu endereco',
+      'vou expor voce',
+      'vou expor tua vida',
+      'vou expor sua vida',
+      'vou mostrar pra todo mundo',
+      'vou mandar pra tua familia',
+      'vou mandar pra sua familia',
+      'vou passar seu numero',
+      'vou passar teu numero',
+      'sei seu cpf',
+      'sei teu cpf',
+      'tenho seus dados',
+      'tenho teus dados',
+      'achei seus dados',
+      'vou revelar quem voce e',
+    ];
+
+    cases.forEach((phrase) => {
+      it(`blocks "${phrase}"`, () => {
+        const result = filterContent(phrase);
+        expect(result.allowed).toBe(false);
+        if (!result.allowed) expect(result.reason).toBe('hard_block');
+      });
+    });
+  });
+
+  // ── Normalização: acentos e variações devem ser capturados ───────────────
+  describe('bypass com acentos — devem ser bloqueados', () => {
+    it('blocks "sei onde você mora" (acento em você)', () => {
+      expect(filterContent('sei onde você mora').allowed).toBe(false);
+    });
+
+    it('blocks "sei onde você trabalha" (acento em você)', () => {
+      expect(filterContent('sei onde você trabalha').allowed).toBe(false);
+    });
+
+    it('blocks "sei teu endereço" (acento em endereço)', () => {
+      expect(filterContent('sei teu endereço').allowed).toBe(false);
+    });
+
+    it('blocks "vou expor você" (acento em você)', () => {
+      expect(filterContent('vou expor você').allowed).toBe(false);
+    });
+
+    it('blocks "vou mandar pra tua família" (acento em família)', () => {
+      expect(filterContent('vou mandar pra tua família').allowed).toBe(false);
+    });
+  });
+
+  // ── Falsos positivos — não devem ser bloqueados ───────────────────────────
+  describe('falsos positivos — devem ser permitidos', () => {
+    it('allows "sei onde fica o mercado"', () => {
+      expect(filterContent('sei onde fica o mercado').allowed).toBe(true);
+    });
+
+    it('allows "sei onde eu moro"', () => {
+      expect(filterContent('sei onde eu moro').allowed).toBe(true);
+    });
+
+    it('allows "sei que voce estuda muito"', () => {
+      expect(filterContent('sei que voce estuda muito').allowed).toBe(true);
+    });
+
+    it('allows "to de olho no projeto"', () => {
+      expect(filterContent('to de olho no projeto').allowed).toBe(true);
+    });
+
+    it('allows "nao tem como saber"', () => {
+      expect(filterContent('nao tem como saber').allowed).toBe(true);
+    });
+
+    it('allows "sei seu nome completo"', () => {
+      expect(filterContent('sei seu nome completo').allowed).toBe(true);
+    });
+  });
+});
