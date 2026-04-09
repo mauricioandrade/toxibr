@@ -243,8 +243,8 @@ describe('abbreviation fixes (v2)', () => {
     expect(filterContent('pnc').allowed).toBe(false);
   });
 
-  it('blocks "dlc" (fixed key: was dlç)', () => {
-    expect(filterContent('dlc').allowed).toBe(false);
+  it('allows "dlc" (Downloadable Content — falso positivo para gamers)', () => {
+    expect(filterContent('dlc').allowed).toBe(true);
   });
 });
 
@@ -1539,9 +1539,10 @@ describe('[Issue #42] - 10 Termos Reportados', () => {
       expect(result.allowed).toBe(false);
     });
 
-    it('blocks "sx" (abreviação via ABBREVIATION_MAP)', () => {
-      const result = filterContent('sx');
-      expect(result.allowed).toBe(false);
+    it('allows "sx" isolado (removido de ABBREVIATION_MAP — SSX é jogo EA; "sexo" permanece bloqueado)', () => {
+      // "sx" foi removido do mapa pois "SSX" (jogo EA Sports) colapsava ss→s→sx→sexo
+      // A cobertura permanece via: "sexo" hard-blocked, s3x0 (leet), s*x (bypass)
+      expect(filterContent('sx').allowed).toBe(true);
     });
 
     it('normalize converte s3x0 para sexo', () => {
@@ -2042,6 +2043,721 @@ describe('[Issue #27] - Stalking, perseguição e ameaças pessoais', () => {
 
     it('allows "sei seu nome completo"', () => {
       expect(filterContent('sei seu nome completo').allowed).toBe(true);
+    });
+  });
+});
+
+// ─── Nomes de Jogos — Falsos Positivos (issue #64) ───────────────────────────
+// Auditoria de 200+ jogos populares e termos de gaming.
+// Todos devem ser permitidos pelo filtro.
+
+describe('game names — FPS / Battle Royale', () => {
+  const games = [
+    'Counter-Strike 2',
+    'CS2',
+    'CSGO',
+    'Counter-Strike Global Offensive',
+    'Valorant',
+    'Fortnite',
+    'PUBG',
+    'PlayerUnknown Battlegrounds',
+    'Apex Legends',
+    'Overwatch 2',
+    'Call of Duty',
+    'Warzone',
+    'Warzone 2',
+    'Rainbow Six Siege',
+    'Free Fire',
+    'Free Fire Max',
+    'Halo Infinite',
+    'Halo 3',
+    'Team Fortress 2',
+    'Titanfall 2',
+    'Splitgate',
+    'Hunt Showdown',
+    'Escape from Tarkov',
+    'Paladins',
+    'Quake Champions',
+    'Doom Eternal',
+    'Doom 2016',
+    'Bulletstorm',
+    'Left 4 Dead 2',
+    'Back 4 Blood',
+    'Deep Rock Galactic',
+    'Gunfire Reborn',
+    'Remnant 2',
+    'Risk of Rain 2',
+    'Killing Floor 2',
+    'Insurgency Sandstorm',
+    'Battlefield 2042',
+    'Battlefield V',
+    'Battlefield 1',
+    'Call of Duty Modern Warfare',
+    'Call of Duty Black Ops',
+    'Destiny 2',
+    'Outriders',
+    'The Division 2',
+  ];
+
+  games.forEach((name) => {
+    it(`allows: "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+  });
+});
+
+describe('game names — MOBA / RPG', () => {
+  const games = [
+    'League of Legends',
+    'LoL',
+    'Dota 2',
+    'DOTA',
+    'Genshin Impact',
+    'Honkai Star Rail',
+    'Honkai Impact 3rd',
+    'Diablo IV',
+    'Diablo Immortal',
+    'Diablo 3',
+    'Path of Exile',
+    'Path of Exile 2',
+    'Lost Ark',
+    'World of Warcraft',
+    'WoW',
+    'WoW Classic',
+    'Final Fantasy XIV',
+    'Final Fantasy XVI',
+    'FFXIV',
+    'FF14',
+    'Final Fantasy VII Remake',
+    'Final Fantasy VII Rebirth',
+    'Black Desert Online',
+    'Elder Scrolls Online',
+    'ESO',
+    'Guild Wars 2',
+    'GW2',
+    'RuneScape',
+    'Old School RuneScape',
+    'OSRS',
+    'MapleStory',
+    'Ragnarok Online',
+    'Lineage W',
+    'Smite',
+    'Heroes of the Storm',
+    'HOTS',
+    'Battlerite',
+    'Predecessor',
+    'Frostpunk 2',
+    'Pillars of Eternity',
+    'Baldurs Gate 3',
+    'BG3',
+    'Divinity Original Sin 2',
+    'Dragon Age Origins',
+    'Dragon Age Inquisition',
+    'Vampire Survivors',
+    'Torchlight Infinite',
+    'Monster Hunter World',
+    'Monster Hunter Rise',
+  ];
+
+  games.forEach((name) => {
+    it(`allows: "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+  });
+});
+
+describe('game names — Aventura / Ação', () => {
+  const games = [
+    'GTA V',
+    'GTA 6',
+    'Grand Theft Auto V',
+    'Red Dead Redemption 2',
+    'RDR2',
+    'Elden Ring',
+    'Elden Ring Shadow of the Erdtree',
+    'God of War Ragnarok',
+    'God of War',
+    'The Last of Us',
+    'The Last of Us Part 2',
+    'Resident Evil 4',
+    'Resident Evil Village',
+    'Resident Evil 2',
+    'Hogwarts Legacy',
+    'Zelda Tears of the Kingdom',
+    'TotK',
+    'BotW',
+    'Minecraft',
+    'Minecraft Bedrock',
+    'Roblox',
+    'Cyberpunk 2077',
+    'Cyberpunk Phantom Liberty',
+    'The Witcher 3',
+    'The Witcher 3 Wild Hunt',
+    'Dark Souls',
+    'Dark Souls 3',
+    'Dark Souls Remastered',
+    'Bloodborne',
+    'Sekiro',
+    'Sekiro Shadows Die Twice',
+    'Nioh 2',
+    'Nioh',
+    'Devil May Cry 5',
+    'Devil May Cry',
+    'DMC5',
+    'Bayonetta 3',
+    'Bayonetta',
+    'Hades',
+    'Hades 2',
+    'Dead Cells',
+    'Hollow Knight',
+    'Hollow Knight Silksong',
+    'Celeste',
+    'Shovel Knight',
+    'Cuphead',
+    'Ori and the Blind Forest',
+    'Ori and the Will of the Wisps',
+    'Metroid Dread',
+    'Metroid Prime',
+    'Spider-Man 2',
+    'Spider-Man Miles Morales',
+    'Batman Arkham Knight',
+    'Batman Arkham City',
+    "Assassin's Creed Valhalla",
+    "Assassin's Creed Mirage",
+    "Assassin's Creed Origins",
+    "Assassin's Creed Odyssey",
+    'Ghost of Tsushima',
+    'Ghost of Tsushima Directors Cut',
+    'Hitman 3',
+    'Hitman World of Assassination',
+    'Hitman',
+    'Watch Dogs Legion',
+    'Watch Dogs 2',
+    'Mafia Definitive Edition',
+    'Mafia 3',
+    'Far Cry 6',
+    'Far Cry 5',
+    'Far Cry New Dawn',
+    'Just Cause 4',
+    'Saints Row',
+    'Control',
+    'Alan Wake 2',
+    'Alan Wake',
+    'Death Stranding',
+    'Death Stranding Directors Cut',
+    'Dying Light 2',
+    'Dying Light',
+    'Ghostwire Tokyo',
+    'Deathloop',
+    'Mortal Kombat',
+    'Mortal Kombat 11',
+    'MK11',
+    'Mortal Kombat 1',
+    'Killer Instinct',
+  ];
+
+  games.forEach((name) => {
+    it(`allows: "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+  });
+});
+
+describe('game names — Horror / Suspense', () => {
+  const games = [
+    'Phasmophobia',
+    'Outlast',
+    'Outlast 2',
+    'Outlast Trials',
+    'Dead by Daylight',
+    'Silent Hill 2',
+    'Silent Hill',
+    'Amnesia The Dark Descent',
+    'Amnesia Rebirth',
+    'Little Nightmares',
+    'Little Nightmares 2',
+    'Dread Templar',
+    'Visage',
+    'Layers of Fear',
+    'Five Nights at Freddys',
+    'FNAF',
+    'Soma',
+    'Subnautica',
+    'The Forest',
+    'Sons of the Forest',
+    'Green Hell',
+    'Grounded',
+    'Dead Space',
+    'Dead Space Remake',
+    'Killing Floor',
+    'Killing Floor 2',
+  ];
+
+  games.forEach((name) => {
+    it(`allows: "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+  });
+});
+
+describe('game names — Esportes / Corrida', () => {
+  const games = [
+    'EA FC 25',
+    'EA FC 24',
+    'FIFA 23',
+    'FIFA 22',
+    'eFootball 2024',
+    'eFootball',
+    'PES 2021',
+    'NBA 2K24',
+    'NBA 2K23',
+    'NBA 2K25',
+    'NBA Live',
+    'Rocket League',
+    'Gran Turismo 7',
+    'Gran Turismo',
+    'Forza Horizon 5',
+    'Forza Horizon 4',
+    'Forza Motorsport',
+    'F1 23',
+    'F1 22',
+    'WRC Generations',
+    'Dirt Rally 2',
+    'Need for Speed Heat',
+    'Need for Speed Unbound',
+    'Wreckfest',
+    'Riders Republic',
+    'Tony Hawk Pro Skater',
+    'Tony Hawk',
+    'SSX',
+    'SSX 3',
+    'NFL Madden 24',
+    'PGA Tour 2K23',
+    'WWE 2K24',
+    'UFC 5',
+  ];
+
+  games.forEach((name) => {
+    it(`allows: "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+  });
+});
+
+describe('game names — Estratégia / Simulação', () => {
+  const games = [
+    'Civilization 6',
+    'Civilization V',
+    'Civ 6',
+    'Age of Empires 4',
+    'Age of Empires 2',
+    'AoE4',
+    'StarCraft 2',
+    'Warcraft 3',
+    'Warcraft Reforged',
+    'Command and Conquer',
+    'Red Alert 3',
+    'Factorio',
+    'Cities Skylines',
+    'Cities Skylines 2',
+    'Planet Zoo',
+    'Planet Coaster',
+    'Football Manager',
+    'Football Manager 2024',
+    'RimWorld',
+    'Dwarf Fortress',
+    'Oxygen Not Included',
+    'Surviving Mars',
+    'Surviving the Aftermath',
+    'Crusader Kings 3',
+    'CK3',
+    'Europa Universalis 4',
+    'EU4',
+    'Hearts of Iron 4',
+    'HOI4',
+    'Victoria 3',
+    'Stellaris',
+    'Total War Warhammer 3',
+    'Total War Three Kingdoms',
+    'XCOM 2',
+    'XCOM Enemy Unknown',
+    'Phoenix Point',
+    'Into the Breach',
+    'Slay the Spire',
+    'Frostpunk',
+    'Anno 1800',
+  ];
+
+  games.forEach((name) => {
+    it(`allows: "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+  });
+});
+
+describe('game names — Survival / Sandbox', () => {
+  const games = [
+    'Terraria',
+    'Stardew Valley',
+    'Animal Crossing',
+    'Animal Crossing New Horizons',
+    'Valheim',
+    'Rust',
+    'DayZ',
+    'Ark Survival Evolved',
+    'Ark Survival Ascended',
+    '7 Days to Die',
+    'Subnautica Below Zero',
+    'The Forest',
+    'Green Hell',
+    'Conan Exiles',
+    'Raft',
+    'No Mans Sky',
+    'Satisfactory',
+    'Astroneer',
+    'The Long Dark',
+    'Stranded Deep',
+    'Icarus',
+    'Minecraft Survival',
+    'Minecraft Creative',
+    'Palworld',
+    'Enshrouded',
+    'Smalland',
+  ];
+
+  games.forEach((name) => {
+    it(`allows: "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+  });
+});
+
+describe('game names — Luta / Fighting', () => {
+  const games = [
+    'Tekken 8',
+    'Tekken 7',
+    'Tekken',
+    'Street Fighter 6',
+    'Street Fighter V',
+    'SF6',
+    'Mortal Kombat 11',
+    'Mortal Kombat 1',
+    'Killer Instinct',
+    'Killer Instinct Season 3',
+    'Guilty Gear Strive',
+    'Guilty Gear Xrd',
+    'Dragon Ball FighterZ',
+    'Dragon Ball Sparking Zero',
+    'BlazBlue Cross Tag Battle',
+    'King of Fighters 15',
+    'KOF15',
+    'Samurai Shodown',
+    'Injustice 2',
+    'Marvel vs Capcom',
+    'Soul Calibur 6',
+    'Skullgirls',
+    'Under Night In-Birth',
+    'DNF Duel',
+    'Granblue Fantasy Versus',
+    'Multiversus',
+    'Brawlhalla',
+  ];
+
+  games.forEach((name) => {
+    it(`allows: "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+  });
+});
+
+describe('game names — Party / Casual / Indie', () => {
+  const games = [
+    'Among Us',
+    'Fall Guys',
+    'Stumble Guys',
+    'Gang Beasts',
+    'Overcooked',
+    'Overcooked 2',
+    'Untitled Goose Game',
+    'Jackbox Party Pack',
+    'Human Fall Flat',
+    'Moving Out',
+    'Tools Up',
+    'Pummel Party',
+    'Ultimate Chicken Horse',
+    'Cuphead The Delicious Last Course',
+    'Hollow Knight',
+    'Celeste',
+    'Ori',
+    'Psychonauts 2',
+    'A Hat in Time',
+    'Yooka-Laylee',
+    'Ratchet and Clank',
+    'Sackboy A Big Adventure',
+    'Kirby Forgotten Land',
+    'Donkey Kong Country',
+    'Mega Man 11',
+    'Cave Story',
+    'Owlboy',
+    'Spelunky',
+    'Spelunky 2',
+    'The Binding of Isaac',
+    'Nuclear Throne',
+    'Enter the Gungeon',
+    'Gungeon',
+    'Shovel Knight Treasure Trove',
+  ];
+
+  games.forEach((name) => {
+    it(`allows: "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+  });
+});
+
+// ─── Palavras com potencial de colisão — mencionadas na issue #64 ─────────────
+
+describe('game names — colisões potenciais (issue #64)', () => {
+  describe('palavras-chave de jogos que poderiam colidir', () => {
+    it('allows "Mortal Kombat" (mortal)', () => {
+      expect(filterContent('Mortal Kombat').allowed).toBe(true);
+    });
+
+    it('allows "Dead by Daylight" (dead)', () => {
+      expect(filterContent('Dead by Daylight').allowed).toBe(true);
+    });
+
+    it('allows "Killer Instinct" (killer)', () => {
+      expect(filterContent('Killer Instinct').allowed).toBe(true);
+    });
+
+    it('allows "Devil May Cry" (devil)', () => {
+      expect(filterContent('Devil May Cry').allowed).toBe(true);
+    });
+
+    it('allows "Hitman" (hit)', () => {
+      expect(filterContent('Hitman').allowed).toBe(true);
+    });
+
+    it('allows "Assassin\'s Creed" (assassin)', () => {
+      expect(filterContent("Assassin's Creed").allowed).toBe(true);
+    });
+
+    it('allows "Final Fantasy XVI" (XVI não é abreviação de xvideos)', () => {
+      expect(filterContent('Final Fantasy XVI').allowed).toBe(true);
+    });
+
+    it('allows "SSX" (jogo EA Sports Snow — não é abreviação de sexo)', () => {
+      expect(filterContent('SSX').allowed).toBe(true);
+    });
+
+    it('allows "NBA 2K24" (código com dígito inicial não é ofuscação)', () => {
+      expect(filterContent('NBA 2K24').allowed).toBe(true);
+    });
+
+    it('allows "comprei o DLC do Elden Ring" (DLC = Downloadable Content)', () => {
+      expect(filterContent('comprei o DLC do Elden Ring').allowed).toBe(true);
+    });
+  });
+
+  describe('aliases e abreviações comuns de jogos', () => {
+    const aliases = [
+      'CS',
+      'CS2',
+      'CSGO',
+      'LoL',
+      'WoW',
+      'DOTA',
+      'GTA',
+      'RDR2',
+      'FFXIV',
+      'FF14',
+      'FF16',
+      'BotW',
+      'TotK',
+      'MK11',
+      'SF6',
+      'DMC5',
+      'HOTS',
+      'GW2',
+      'OSRS',
+      'FNAF',
+      'AoE4',
+      'CK3',
+      'EU4',
+      'HOI4',
+      'BG3',
+      'KOF15',
+      'ESO',
+      'BF2042',
+    ];
+
+    aliases.forEach((alias) => {
+      it(`allows alias: "${alias}"`, () => {
+        expect(filterContent(alias).allowed).toBe(true);
+      });
+    });
+  });
+});
+
+// ─── Frases e Termos de Gaming ────────────────────────────────────────────────
+
+describe('gaming phrases — falsos positivos', () => {
+  describe('frases comuns de gamers', () => {
+    const phrases = [
+      'vou jogar Valorant agora',
+      'partida no CS2',
+      'matchando no Fortnite',
+      'jogar ranked hoje',
+      'headshot no valorant',
+      'comprei o DLC do jogo',
+      'novo patch do Valorant saiu',
+      'skin no Fortnite gratis',
+      'kill streak no CS',
+      'vou jogar com meu amigo',
+      'quer jogar comigo',
+      'jogar no PC esta noite',
+      'jogar no console hoje',
+      'speedrun de Minecraft',
+      'farmando XP no LoL',
+      'grindando ranked',
+      'craftei uma espada',
+      'respawnou no base',
+      'matchmaking do Valorant',
+      'esports profissional',
+      'streamer de Fortnite',
+      'pro player de CS',
+      'tryhard no ranked',
+      'noob no jogo',
+      'buff no personagem',
+      'nerf na weapon',
+      'clutch no CS',
+      'ace na round',
+      'frag no deathmatch',
+      'lootbox no jogo',
+    ];
+
+    phrases.forEach((phrase) => {
+      it(`allows: "${phrase}"`, () => {
+        expect(filterContent(phrase).allowed).toBe(true);
+      });
+    });
+  });
+
+  describe('jogar com/contra alguém — inocente em gaming', () => {
+    it('allows "quer jogar com voce"', () => {
+      expect(filterContent('quer jogar com voce').allowed).toBe(true);
+    });
+
+    it('allows "jogar contra voce hoje"', () => {
+      expect(filterContent('jogar contra voce hoje').allowed).toBe(true);
+    });
+
+    it('allows "jogar no PC com voce"', () => {
+      expect(filterContent('jogar no PC com voce').allowed).toBe(true);
+    });
+
+    it('allows "quer jogar de noite com a gente"', () => {
+      expect(filterContent('quer jogar de noite com a gente').allowed).toBe(true);
+    });
+
+    it('allows "vou jogar o jogo agora"', () => {
+      expect(filterContent('vou jogar o jogo agora').allowed).toBe(true);
+    });
+
+    it('allows "jogar a partida com voce"', () => {
+      expect(filterContent('jogar a partida com voce').allowed).toBe(true);
+    });
+
+    it('still blocks "jogar leite em voce" (frase sexual hard-blocked)', () => {
+      expect(filterContent('jogar leite em voce').allowed).toBe(false);
+    });
+
+    it('still blocks "jogar um leite" (frase sexual hard-blocked)', () => {
+      expect(filterContent('jogar um leite').allowed).toBe(false);
+    });
+  });
+
+  describe('termos de gaming com números — não são ofuscação', () => {
+    it('allows "NBA 2K24" (código com dígito inicial)', () => {
+      expect(filterContent('NBA 2K24').allowed).toBe(true);
+    });
+
+    it('allows "NBA 2K23"', () => {
+      expect(filterContent('NBA 2K23').allowed).toBe(true);
+    });
+
+    it('allows "Tekken 8" (número simples)', () => {
+      expect(filterContent('Tekken 8').allowed).toBe(true);
+    });
+
+    it('allows "F1 23" (código de corrida)', () => {
+      expect(filterContent('F1 23').allowed).toBe(true);
+    });
+
+    it('still blocks "v14d0" (ofuscação com letra inicial)', () => {
+      const result = filterContent('v14d0');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('still blocks "c4r4lh0" (ofuscação com letra inicial)', () => {
+      const result = filterContent('c4r4lh0');
+      expect(result.allowed).toBe(false);
+    });
+  });
+
+  describe('DLC — Download Content', () => {
+    it('allows "comprei o DLC"', () => {
+      expect(filterContent('comprei o DLC').allowed).toBe(true);
+    });
+
+    it('allows "o DLC do Elden Ring e incrivel"', () => {
+      expect(filterContent('o DLC do Elden Ring e incrivel').allowed).toBe(true);
+    });
+
+    it('allows "novo DLC anunciado"', () => {
+      expect(filterContent('novo DLC anunciado').allowed).toBe(true);
+    });
+
+    it('allows "DLC gratuito disponivel"', () => {
+      expect(filterContent('DLC gratuito disponivel').allowed).toBe(true);
+    });
+
+    it('allows "esse DLC foi incrivel"', () => {
+      expect(filterContent('esse DLC foi incrivel').allowed).toBe(true);
+    });
+  });
+
+  describe('Final Fantasy XVI — numeral romano XVI', () => {
+    it('allows "Final Fantasy XVI"', () => {
+      expect(filterContent('Final Fantasy XVI').allowed).toBe(true);
+    });
+
+    it('allows "jogando FF16"', () => {
+      expect(filterContent('jogando FF16').allowed).toBe(true);
+    });
+
+    it('allows "FF XVI e otimo"', () => {
+      expect(filterContent('FF XVI e otimo').allowed).toBe(true);
+    });
+  });
+
+  describe('SSX — jogo EA Sports', () => {
+    it('allows "SSX" (jogo de snowboard)', () => {
+      expect(filterContent('SSX').allowed).toBe(true);
+    });
+
+    it('allows "SSX 3 e o melhor jogo de snowboard"', () => {
+      expect(filterContent('SSX 3 e o melhor jogo de snowboard').allowed).toBe(true);
+    });
+
+    it('still blocks "sexo" diretamente', () => {
+      expect(filterContent('sexo').allowed).toBe(false);
+    });
+
+    it('still blocks "s3x0" (leet)', () => {
+      expect(filterContent('s3x0').allowed).toBe(false);
     });
   });
 });

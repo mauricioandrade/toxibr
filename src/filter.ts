@@ -321,6 +321,27 @@ const FUZZY_ALLOWLIST = new Set([
   'nadia', // → vadia  (dist 1)
   'nunes', // → nudes  (dist 1)
   'porto', // → porno  (dist 1)
+  // Nomes de jogos populares — issue #64
+  // Palavras em títulos de jogos que poderiam colidir com termos bloqueados via fuzzy
+  'mortal', // Mortal Kombat
+  'kombat', // Mortal Kombat
+  'hitman', // Hitman
+  'asasin', // Assassin's Creed (normalizado: assassin → asasin via colapso ss→s)
+  'devil', // Devil May Cry
+  'kiler', // Killer Instinct (normalizado: killer → kiler via colapso ll→l)
+  'instinct', // Killer Instinct
+  'daylight', // Dead by Daylight
+  'fortnite', // Fortnite
+  'valorant', // Valorant
+  'overwatch', // Overwatch
+  'minecraft', // Minecraft
+  'roblox', // Roblox
+  'ranked', // termo de gaming (modo classificatório)
+  'gamer', // termo de gaming
+  'headshot', // termo de gaming (FPS)
+  'respawn', // termo de gaming
+  'matchup', // termo de gaming
+  'esports', // termo de gaming
 ]);
 
 // ─── PT-BR Stemmer (RSLP simplificado) ──────────────────────────────────────
@@ -609,15 +630,20 @@ export function createFilter(options: ToxiBROptions = {}): ToxiBRFilter {
     // Layer 0e: Words with 3+ digits mixed with letters — obfuscation bypass
     // (e.g. v14d0, p0rn0gr4f14, c4r4lh0). Pure digit sequences and known
     // technical patterns (like "h2o2", short codes) are excluded.
+    // Product/version codes like "2K24" or "BF2042" are also excluded: in those
+    // codes digits outnumber letters (≥ 2×), whereas obfuscated slurs have more
+    // letters than digits (v14d0 has 2 letters vs 3 digits; c4r4lh0 has 4 vs 3).
     {
       const words = text.split(/\s+/);
       for (const w of words) {
         // Must contain at least one letter and at least 3 digits
         if (!/[a-zA-Z]/.test(w)) continue;
         const digitCount = (w.match(/\d/g) || []).length;
-        if (digitCount >= 3) {
-          return makeResult('hard_block', 'censorship bypass');
-        }
+        if (digitCount < 3) continue;
+        // Skip product/version codes where digits dominate over letters (e.g. "2K24", "BF2042")
+        const letterCount = (w.match(/[a-zA-Z]/g) || []).length;
+        if (digitCount >= letterCount * 2) continue;
+        return makeResult('hard_block', 'censorship bypass');
       }
     }
 
