@@ -198,7 +198,7 @@ export const HARD_BLOCKED: string[] = [
   'cam girl', 'fatal model',
 
   // ── Termos em ingles ──
-  'tits', 'fuck', 'jerk', 'jerk off', 'pussy', 'dick', 'cock', 'blowjob',
+  'tits', 'fuck', 'jerk', 'jerk off', 'pussy', 'dick', 'cock', 'blowjob', 'nigga',
   'estupro', 'estuprar', 'estuprador',
   'estrupo', 'estrupador',  // misspellings comuns
   'pedofilo', 'pedofilia',
