@@ -454,7 +454,7 @@ describe('false positives — must NEVER block', () => {
     'Vou disputar o jogo',
     'O deputado falou',
     'Reputação é importante',
-    'Assassino no filme',
+    // 'Assassino no filme' — removido: "assassino" agora é hard-blocked (v3)
   ];
 
   safe.forEach((phrase) => {
@@ -884,8 +884,8 @@ describe('word boundary safety', () => {
     expect(filterContent('minha reputação').allowed).toBe(true);
   });
 
-  it('does NOT block "assassino" (contains "ass")', () => {
-    expect(filterContent('o assassino').allowed).toBe(true);
+  it('does NOT block "computador" (contains "put")', () => {
+    expect(filterContent('meu computador lento').allowed).toBe(true);
   });
 });
 
@@ -1383,7 +1383,7 @@ describe('leetspeak legítimo (0, 1, 3, 4, 5, 7) continua funcionando via Layer 
 
 // ─── Issue #42 — 10 Termos Não Capturados ────────────────────────────────────
 
-describe('[Issue #42] - 10 Termos Reportados', () => {
+describe('10 Termos Reportados', () => {
   // ── pornografia ────────────────────────────────────────────────────────────
 
   describe('pornografia — variantes de bypass', () => {
@@ -1741,9 +1741,9 @@ describe('stem_match', () => {
   });
 });
 
-// ─── Issue #46 — Bypass com símbolos especiais (€, ³, £, etc.) ──────────────
+// ───  Bypass com símbolos especiais (€, ³, £, etc.) ──────────────
 
-describe('[Issue #46] - Bypass com símbolos especiais (€, ³, £, ¢)', () => {
+describe('Bypass com símbolos especiais (€, ³, £, ¢)', () => {
   describe('normalização de símbolos especiais', () => {
     it('normalizes € → e (m€rda → merda)', () => {
       expect(normalize('m€rda')).toBe('merda');
@@ -1798,9 +1798,9 @@ describe('[Issue #46] - Bypass com símbolos especiais (€, ³, £, ¢)', () =>
   });
 });
 
-// ─── Issue #47 — Bloqueio automático de palavras com 3+ dígitos ─────────────
+// ───  Bloqueio automático de palavras com 3+ dígitos ─────────────
 
-describe('[Issue #47] - Bloqueio de palavras com 3+ dígitos (ofuscação)', () => {
+describe('[  Bloqueio de palavras com 3+ dígitos (ofuscação)', () => {
   describe('bypass bloqueado (3+ dígitos em palavra com letras)', () => {
     it('blocks v14d0 (viado com 3 dígitos)', () => {
       const result = filterContent('v14d0');
@@ -1866,7 +1866,7 @@ describe('[Issue #47] - Bloqueio de palavras com 3+ dígitos (ofuscação)', () 
 
 // ─── Issue #27 — Stalking, perseguição e ameaças pessoais ────────────────────
 
-describe('[Issue #27] - Stalking, perseguição e ameaças pessoais', () => {
+describe('Stalking, perseguição e ameaças pessoais', () => {
   // ── Stalking: conhecimento de localização e rotina ────────────────────────
   describe('stalking — conhecimento de localização e rotina', () => {
     const cases = [
@@ -2047,6 +2047,7 @@ describe('[Issue #27] - Stalking, perseguição e ameaças pessoais', () => {
   });
 });
 
+<<<<<<< Updated upstream
 // ─── Times de futebol brasileiro — falsos positivos ──────────────────────────
 
 describe('times de futebol brasileiro — falsos positivos (issue #62)', () => {
@@ -2597,5 +2598,251 @@ describe('times de futebol brasileiro — falsos positivos (issue #62)', () => {
     expect(filterContent('Sao Joseense joga pela Serie D').allowed).toBe(true);
     expect(filterContent('Azuriz joga pela Serie D').allowed).toBe(true);
     expect(filterContent('Sao Jose RS joga pela Serie D').allowed).toBe(true);
+=======
+// ─── Autolesão e suicídio — prevenção ────────────────────────────────────────
+
+describe('autolesão e suicídio — prevenção', () => {
+  // ── Frases canônicas (sem acento, sem variação de hífen) ─────────────────
+
+  describe('frases de incitação — formas canônicas', () => {
+    const phrases = [
+      'se jogue da ponte',
+      'se jogue do predio',
+      'pule da ponte',
+      'pule do predio',
+      'atire-se da ponte',
+      'atire se da ponte',
+      'atire-se do predio',
+      'atire se do predio',
+    ];
+
+    phrases.forEach((phrase) => {
+      it(`blocks "${phrase}"`, () => {
+        const result = filterContent(phrase);
+        expect(result.allowed).toBe(false);
+        if (!result.allowed) expect(result.reason).toBe('hard_block');
+      });
+    });
+  });
+
+  describe('frases com acento em "prédio" (normalização automática)', () => {
+    const accentedPhrases = [
+      ['se jogue do prédio', 'se jogue do predio'],
+      ['pule do prédio', 'pule do predio'],
+      ['atire-se do prédio', 'atire-se do predio'],
+      ['atire se do prédio', 'atire se do predio'],
+    ] as const;
+
+    accentedPhrases.forEach(([input, canonical]) => {
+      it(`blocks "${input}" (normaliza para "${canonical}")`, () => {
+        expect(filterContent(input).allowed).toBe(false);
+      });
+    });
+  });
+
+  describe('frases embebidas em mensagem', () => {
+    it('blocks "você deveria se jogue da ponte"', () => {
+      expect(filterContent('você deveria se jogue da ponte').allowed).toBe(false);
+    });
+
+    it('blocks "vai lá e pule da ponte logo"', () => {
+      expect(filterContent('vai lá e pule da ponte logo').allowed).toBe(false);
+    });
+
+    it('blocks "por que você não se atire-se da ponte?"', () => {
+      expect(filterContent('por que você não atire-se da ponte?').allowed).toBe(false);
+    });
+
+    it('blocks "eu te mando atire-se do prédio"', () => {
+      expect(filterContent('eu te mando atire-se do prédio').allowed).toBe(false);
+    });
+  });
+
+  describe('espaços extras e whitespace (normalização colapsa automaticamente)', () => {
+    it('blocks "se  jogue  da  ponte" (espaços duplos)', () => {
+      expect(filterContent('se  jogue  da  ponte').allowed).toBe(false);
+    });
+
+    it('blocks "pule   do   predio" (espaços triplos)', () => {
+      expect(filterContent('pule   do   predio').allowed).toBe(false);
+    });
+  });
+
+  describe('detecção por fragmento — complementos variados (partial patterns)', () => {
+    it('blocks "cara, se joga do telhado agora" (fragmento + complemento livre)', () => {
+      const result = filterContent('cara, se joga do telhado agora');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks "apenas se jogue da janela" (subjuntivo + complemento livre)', () => {
+      const result = filterContent('apenas se jogue da janela');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks "por que você não se joga de um lugar bem alto?" (de + complemento)', () => {
+      expect(filterContent('por que você não se joga de um lugar bem alto?').allowed).toBe(false);
+    });
+
+    it('blocks "se jogue da sacada" (complemento diferente das entradas da wordlist)', () => {
+      expect(filterContent('se jogue da sacada').allowed).toBe(false);
+    });
+
+    it('blocks "se joga do morro" (gíria regional)', () => {
+      expect(filterContent('se joga do morro').allowed).toBe(false);
+    });
+
+    it('blocks "se jogue de qualquer lugar alto" (de + complemento genérico)', () => {
+      expect(filterContent('se jogue de qualquer lugar alto').allowed).toBe(false);
+    });
+
+    it('blocks infinitivo: "se jogar da varanda"', () => {
+      expect(filterContent('se jogar da varanda').allowed).toBe(false);
+    });
+
+    it('blocks infinitivo: "se jogar do terraço"', () => {
+      expect(filterContent('se jogar do terraço').allowed).toBe(false);
+    });
+
+    it('blocks embedded mid-sentence: "manda ele se jogar do prédio"', () => {
+      expect(filterContent('manda ele se jogar do prédio').allowed).toBe(false);
+    });
+  });
+
+  describe('falsos positivos — partial patterns não bloqueiam uso inocente', () => {
+    it('allows "vamos se jogar no trabalho" (preposição "no", não "do/da/de")', () => {
+      expect(filterContent('vamos se jogar no trabalho').allowed).toBe(true);
+    });
+
+    it('allows "bora se jogar na areia" (preposição "na", não "da/do/de")', () => {
+      expect(filterContent('bora se jogar na areia').allowed).toBe(true);
+    });
+  });
+
+  describe('termos suicidas isolados', () => {
+    it('blocks "suicídio" (com acento)', () => {
+      const result = filterContent('suicídio');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks "suicidio" (sem acento)', () => {
+      expect(filterContent('suicidio').allowed).toBe(false);
+    });
+
+    it('blocks "suicidar"', () => {
+      const result = filterContent('suicidar');
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) expect(result.reason).toBe('hard_block');
+    });
+
+    it('blocks "autoextermínio" (com acento)', () => {
+      expect(filterContent('autoextermínio').allowed).toBe(false);
+    });
+
+    it('blocks "autoexterminio" (sem acento)', () => {
+      expect(filterContent('autoexterminio').allowed).toBe(false);
+    });
+
+    it('blocks phrase containing "suicídio"', () => {
+      expect(filterContent('estou pensando em suicídio').allowed).toBe(false);
+    });
+
+    it('blocks leetspeak variant: "su1c1d10"', () => {
+      expect(filterContent('su1c1d10').allowed).toBe(false);
+    });
+  });
+});
+
+// ─── Assassinato / homicídio ──────────────────────────────────────────────────
+
+describe('assassinato e homicídio', () => {
+  describe('formas explícitas na wordlist', () => {
+    const terms = [
+      'assassinato',
+      'assassinio',
+      'assassina',
+      'assassinar',
+      'assassinado',
+      'assassino',
+      'assassinando',
+      'assassinei',
+      'assassinaste',
+      'assassinou',
+      'assassinava',
+      'assassinavas',
+      'assassinarei',
+      'assassinaras',
+      'assassinara',
+      'matador',
+      'homicida',
+    ];
+
+    terms.forEach((term) => {
+      it(`blocks "${term}"`, () => {
+        expect(filterContent(term).allowed).toBe(false);
+      });
+    });
+
+    it('blocks "assassínio" (com acento)', () => {
+      expect(filterContent('assassínio').allowed).toBe(false);
+    });
+
+    it('blocks "assassinarás" (com acento)', () => {
+      expect(filterContent('assassinarás').allowed).toBe(false);
+    });
+
+    it('blocks "assassinará" (com acento)', () => {
+      expect(filterContent('assassinará').allowed).toBe(false);
+    });
+  });
+
+  describe('conjugações capturadas por stem match (raiz "asasin")', () => {
+    const stemmedForms = [
+      'assassinavam', // imperfect plural → stem asasin
+      'assassinariam', // conditional plural → stem asasin
+      'assassinasse', // subjunctive → stem asasin
+    ];
+
+    stemmedForms.forEach((form) => {
+      it(`blocks conjugation "${form}" via stem match`, () => {
+        const result = filterContent(form);
+        expect(result.allowed).toBe(false);
+        if (!result.allowed) expect(result.reason).toBe('stem_match');
+      });
+    });
+  });
+
+  describe('palavra em frase', () => {
+    it('blocks "o assassino fugiu"', () => {
+      expect(filterContent('o assassino fugiu').allowed).toBe(false);
+    });
+
+    it('blocks "ele é um homicida"', () => {
+      expect(filterContent('ele é um homicida').allowed).toBe(false);
+    });
+  });
+});
+
+// ─── Falsos positivos — bandas e artistas ────────────────────────────────────
+
+describe('falsos positivos — bandas e artistas', () => {
+  const bands = [
+    'Cher',
+    'Queen',
+    'Green Day',
+    'The Offspring',
+    'Blink-182',
+    'Linkin Park',
+    'Evanescence',
+    'System of a Down',
+  ];
+
+  bands.forEach((name) => {
+    it(`allows "${name}"`, () => {
+      expect(filterContent(name).allowed).toBe(true);
+    });
+>>>>>>> Stashed changes
   });
 });
