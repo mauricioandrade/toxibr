@@ -336,6 +336,11 @@ const FUZZY_ALLOWLIST = new Set([
   'mosqueteiro', // mascote Grêmio/Corinthians → dist 2 de "boqueteiro"
   'glorioso', // apelido do Botafogo → dist 1 de "gloriosa" (hard blocked)
   'gloriosos', // plural → dist 2 de "gloriosa"
+  // Movie titles that trigger fuzzy false positives
+  'breakers', // → causing false positive in "Spring Breakers"
+  'transe', // → causing false positive in "Terra em Transe" (fuzzy match com "transar")
+  'bicho', // → causing false positives in: "O Bicho vai Pegar", "Bicho de Sete Cabeças" (fuzzy match com "bichona")
+  'lambs', // -> causing false positives in: "The Silence of the Lambs" (fuzzy match com "lamber")
 ]);
 
 // ─── PT-BR Stemmer (RSLP simplificado) ──────────────────────────────────────
